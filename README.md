@@ -1,5 +1,5 @@
 <div align="center">
-<img src="https://static.thenounproject.com/png/9383-200.png" width="200"/>
+<img src="https://github.com/rajat19/Doomsday/blob/master/assets/img/bomb.png" width="200"/>
 <h1 align="center">DOOMSDAY</h1>
 <h2>A java based <a href="https://github.com/buger/gor">GoReplay</a> middleware app</h2>
 
