@@ -27,6 +27,12 @@ A java based [gor](https://github.com/buger/gor) middleware app that allows you 
     ```
    You can update go-replay options by editing `scripts/run.sh`
 
+NOTE: If above commands show `Permission Denied` try running with `sudo` or rather use below commands
+```shell
+sh scripts/compile.sh
+sh scripts/run.sh
+```
+
 ## What does it do?
 
 GoReplay will send each request that was sent to the production server to your staging server.
