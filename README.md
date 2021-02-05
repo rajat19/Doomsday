@@ -1,27 +1,37 @@
-# Doomsday
+<div align="center">
+<img src="https://static.thenounproject.com/png/9383-200.png" width="200"/>
+<h1 align="center">DOOMSDAY</h1>
+<h2>A java based <a href="https://github.com/buger/gor">GoReplay</a> middleware app</h2>
 
-A java based [gor](https://github.com/buger/gor) middleware app that allows you to verify if your testing server is sending (more or less) the same responses as your prod server.
+<a href="https://github.com/rajat19/Doomsday/blob/master/LICENSE">
+<img src="https://img.shields.io/github/license/rajat19/Doomsday?style=for-the-badge"/>
+</a>
+<a href="https://github.com/rajat19/Doomsday/releases/latest">
+<img src="https://img.shields.io/github/v/release/rajat19/Doomsday?style=for-the-badge"/>
+</a>
 
-## Steps
+<h3>The project allows you to verify if your testing server is sending (more or less) the same responses as your prod server</h3>
+</div>
+
+---
+
+## Steps to Run
 
 1. Clone the repo with
     ```shell
     git clone git@github.com:rajat19/Doomsday.git
-    ```
-2. move inside the repo
-    ```shell
     cd Doomsday
     ```
-3. Download the latest Gor binary from https://github.com/buger/gor/releases (they provide precompiled binaries for Windows, Linux x64 and Mac OS), 
+2. Download the latest Gor binary from https://github.com/buger/gor/releases (they provide precompiled binaries for Windows, Linux x64 and Mac OS), 
    or you can compile by yourself see[Compilation](https://github.com/buger/goreplay/wiki/Compilation).
 
 
-4. Build the project with
+3. Build the project with
     ```shell
     ./scripts/compile.sh
     ```
 
-5. Run the project with
+4. Run the project with
     ```shell
     ./scripts/run.sh
     ```
