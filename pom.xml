@@ -20,8 +20,8 @@
     <distributionManagement>
         <repository>
             <id>github</id>
-            <name>raja19 Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/rajat19/Doomsday/com/paradox/geeks/Doomsday</url>
+            <name>Github OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/rajat19/Doomsday</url>
         </repository>
     </distributionManagement>
 
