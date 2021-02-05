@@ -1,9 +1,9 @@
 <div align="center">
-<img src="https://github.com/rajat19/Doomsday/blob/master/assets/img/bomb.png" width="200"/>
+<img src="https://github.com/rajat19/Doomsday/blob/main/assets/img/bomb.png?raw=true" width="200"/>
 <h1 align="center">DOOMSDAY</h1>
 <h2>A java based <a href="https://github.com/buger/gor">GoReplay</a> middleware app</h2>
 
-<a href="https://github.com/rajat19/Doomsday/blob/master/LICENSE">
+<a href="https://github.com/rajat19/Doomsday/blob/main/LICENSE">
 <img src="https://img.shields.io/github/license/rajat19/Doomsday?style=for-the-badge"/>
 </a>
 <a href="https://github.com/rajat19/Doomsday/releases/latest">
