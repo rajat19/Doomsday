@@ -30,6 +30,11 @@ public class Application {
         while (sc.hasNext()) {
             try {
                 GorMessage statement = GorMessage.make(sc.nextLine(), results);
+                doomsday.handleLine(out, results, statement);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                results.flush();
             }
         }
     }

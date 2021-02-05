@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
-import com.google.common.io.Files;
 import com.paradox.geeks.doomsday.management.PropertiesConstants;
 import com.paradox.geeks.doomsday.management.PropertiesManager;
 import com.paradox.geeks.doomsday.messages.GorMessage;
@@ -14,6 +13,7 @@ import com.paradox.geeks.doomsday.messages.GorRequest;
 import com.paradox.geeks.doomsday.rules.Rule;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +25,7 @@ public class Doomsday {
     private final String dirname;
     private final Rule[] rules;
     private PropertiesManager propertiesManager = PropertiesManager.getInstance();
-    private String[] ignoredKeys;
+    private final String[] ignoredKeys;
 
     public Doomsday(String dirname, Rule... rules) {
         this.dirname = dirname;
@@ -43,10 +43,23 @@ public class Doomsday {
         }
         else if (statement instanceof GorOriginalResponse) {
             out.println(statement.asLine());
-            handleOriginalResponse(requestMap.get(statement.getId()), (GorOriginalResponse) statement);
+            if (replayedResponseMap.containsKey(statement.getId())) {
+                handleOriginalResponse(requestMap.get(statement.getId()), (GorOriginalResponse) statement);
+                replayedResponseMap.remove(statement.getId());
+            } else {
+                originalResponseMap.put(statement.getId(), (GorOriginalResponse) statement);
+            }
         }
         else if (statement instanceof GorReplayedResponse) {
             out.println(statement.asLine());
+            if (originalResponseMap.containsKey(statement.getId())) {
+                handleReplayedResponse(results, (GorReplayedResponse) statement, originalResponseMap.get(statement.getId()), requestMap);
+                originalResponseMap.remove(statement.getId());
+            } else {
+                replayedResponseMap.put(statement.getId(), (GorReplayedResponse) statement);
+            }
+        } else {
+            throw new IllegalStateException("Unknown statement type");
         }
     }
 
@@ -79,28 +92,17 @@ public class Doomsday {
     private void compare(GorRequest request, GorOriginalResponse orig, GorReplayedResponse replay, PrintWriter results) {
         boolean differs = false;
         results.println(replay.getId());
-        //writeUsingFileWriter(replay.getId());
         int original_status = orig.getStatus();
         int replay_status = replay.getStatus();
-        if(  replay_status == 904)
-        {
-            // results.println("  ignorance is bliss");
-            // writeUsingFileWriter(" ignorance is bliss");
-            return;
-        }
+        if(replay_status == 904) return;
 
         if (orig.getStatus() != replay.getStatus()) {
-            //    results.println(replay.getId()+"  had differing status");
-            //     writeUsingFileWriter(replay.getId()+"  had differing status" + orig.getStatus() + "--" + replay.getStatus());
             differs = true;
         }
         try{
             if (!Arrays.equals(orig.getBody(), replay.getBody())) {
-                // results.println("  had differing response bodies");
-                // writeUsingFileWriter("  had differing response bodies");
-//                differs = true;
-                String leftJson = new String(orig.getBody(),"UTF8");
-                String rightJson = new String(replay.getBody(),"UTF8");
+                String leftJson = new String(orig.getBody(), StandardCharsets.UTF_8);
+                String rightJson = new String(replay.getBody(), StandardCharsets.UTF_8);
 
                 ObjectMapper mapper = new ObjectMapper();
                 TypeReference<HashMap<String, Object>> type = new TypeReference<HashMap<String, Object>>() {};
@@ -113,63 +115,35 @@ public class Doomsday {
 
                 MapDifference<String, Object> difference = Maps.difference(leftFlatMap, rightFlatMap);
 
-
-                // writeUsingFileWriter("Entries only in Original Response\n--------------------------");
-                // difference.entriesOnlyOnLeft().forEach((key, value) -> writeUsingFileWriterWithValues("Original-" +key + ": " + value, request, orig, replay,results));
                 StringBuilder keysOnLeft = new StringBuilder();
                 difference.entriesOnlyOnLeft().forEach((key, value) -> buildKeysList(key, value, keysOnLeft));
                 if(!keysOnLeft.toString().isEmpty()){
                     differs = true;
-                    writeUsingFileWriter("Entries only in Original Response\n--------------------------");
-                    writeUsingFileWriter(replay.getId()+"--" + keysOnLeft.toString());
+                    FileManager.writeUsingFileWriter(dirname, "Entries only in Original Response\n--------------------------");
+                    FileManager.writeUsingFileWriter(dirname,replay.getId()+"--" + keysOnLeft.toString());
                 }
-
-                // writeUsingFileWriter("\n\nEntries only in Replayed Response\n--------------------------");
-                //    difference.entriesOnlyOnRight().forEach((key, value) -> writeUsingFileWriterWithValues("Replayed-" + key + ": " + value, request, orig, replay,results));
 
                 StringBuilder keysOnRight = new StringBuilder();
                 difference.entriesOnlyOnRight().forEach((key, value) -> buildKeysList(key, value, keysOnRight));
                 if(!keysOnRight.toString().isEmpty()){
                     differs = true;
-
-                    writeUsingFileWriter("\n\nEntries only in Replayed Response\n--------------------------");
-
-                    writeUsingFileWriter(replay.getId()+"--" + keysOnRight.toString());
+                    FileManager.writeUsingFileWriter(dirname,"\n\nEntries only in Replayed Response\n--------------------------");
+                    FileManager.writeUsingFileWriter(dirname,replay.getId()+"--" + keysOnRight.toString());
                 }
-
-                // writeUsingFileWriter("\n\nEntries differing\n--------------------------");
-                // difference.entriesDiffering().forEach((key, value) -> writeUsingFileWriterWithValues("Diff-" + key + ": " + value, request, orig, replay,results));
 
                 StringBuilder keysOnBoth = new StringBuilder();
                 difference.entriesDiffering().forEach((key, value) -> buildKeysList(key, value, keysOnBoth));
                 if(!keysOnBoth.toString().isEmpty()){
                     differs = true;
-
-                    writeUsingFileWriter("\n\nEntries differing in both Response\n--------------------------");
-
-                    writeUsingFileWriter(replay.getId()+"--" + keysOnBoth.toString());
-
-                    writeUsingFileWriter("UserId>>>"+request.getHeader("X-USER-ID"));
-
+                    FileManager.writeUsingFileWriter(dirname, "\n\nEntries differing in both Response\n--------------------------");
+                    FileManager.writeUsingFileWriter(dirname,replay.getId()+"--" + keysOnBoth.toString());
+                    FileManager.writeUsingFileWriter(dirname,"UserId>>>"+request.getHeader("X-USER-ID"));
                 }
             }
         }
         catch(Exception ignored){}
-        if (differs)
-        {
-            writeToFile(request, orig, replay, results);
-        }
-    }
-
-    private void writeToFile(GorRequest request, GorOriginalResponse orig, GorReplayedResponse replayed, PrintWriter
-            results) {
-        try {
-            String slash = File.separator;
-            Files.write(request.getHttpBlock(results), new File(dirname + slash + request.getId() + "_req.txt"));
-            Files.write(orig.getHttpBlock(results), new File(dirname + slash + request.getId() + "_orig.txt"));
-            Files.write(replayed.getHttpBlock(results), new File(dirname + slash + request.getId() + "_repl.txt"));
-        } catch (IOException e) {
-            e.printStackTrace(results);
+        if (differs) {
+            FileManager.writeToFile(dirname, request, orig, replay, results);
         }
     }
 
@@ -187,30 +161,6 @@ public class Doomsday {
                     .append(", ");
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private void writeUsingFileWriter(String data) {
-        File file = new File(this.dirname + "/FileWriter.txt");
-        FileWriter fr = null;
-        try {
-            for(String key : ignoredKeys){
-                if(data!=null && ("---"+data).contains(key)){
-                    return;
-                }
-            }
-
-            fr = new FileWriter(file,true);
-            fr.write(data + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }finally{
-            //close resources
-            try {
-                fr.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
     }
 }
