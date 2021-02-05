@@ -3,6 +3,7 @@ package com.paradox.geeks.doomsday;
 import com.paradox.geeks.doomsday.management.PropertiesConstants;
 import com.paradox.geeks.doomsday.management.PropertiesManager;
 import com.paradox.geeks.doomsday.messages.GorMessage;
+import com.paradox.geeks.doomsday.rules.IgnoreDateDifferenceRule;
 import com.paradox.geeks.doomsday.rules.IgnoreStaticRule;
 
 import java.io.*;
@@ -21,7 +22,8 @@ public class Application {
         PrintWriter results = new PrintWriter(outputDirname + File.separator + "log", "UTF-8");
         Doomsday doomsday = new Doomsday(
                 outputDirname,
-                new IgnoreStaticRule()
+                new IgnoreStaticRule(),
+                new IgnoreDateDifferenceRule()
         );
 
         Scanner sc = new Scanner(System.in);
